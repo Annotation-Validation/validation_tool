@@ -23,6 +23,11 @@
   },
   "homepage": "https://github.com/electron/electron-quick-start#readme",
   "devDependencies": {
+    "devtron": "^1.3.0",
     "electron": "^1.3.4"
+  },
+  "dependencies": {
+    "electron-config": "^0.2.1",
+    "fast-csv": "^2.1.0"
   }
 }

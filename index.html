@@ -2,12 +2,174 @@
 <html>
 <head>
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta charset=“utf-8”>
     <link rel="stylesheet" href="bower_components/angular-material/angular-material.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> 
+    <link href="/style.css" rel="stylesheets"> 
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            overflow: hidden;
+        }
+        .reviewTitle {
+            font-weight: bold;
+            font-size: 30px;
+        }
+        .reviewPhrase {
+            margin-top:5px;
+            font-weight: bold;
+            font-size: 35px;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        #reviewContainer {
+        }
+        .negativeWord {
+            background-color: #f44336;
+
+
+        }
+        .positiveWord {
+            background-color: #4caf50;
+
+        }
+        /* ANIMATIONS */
+
+        .review.ng-enter {
+            transition: 0.5s linear all;
+            opacity: 0;
+            transform: translate(3000px, 0px);
+        }
+        .review.ng-enter-active {
+            height: auto;
+            opacity: 1;
+            transform: translate(0px, 0px);
+        }
+
+        .review.ng-leave {
+            transition: 0.25s linear all;
+            transform: translate(0px, 0px);
+        }
+
+        .review.ng-leave-active {
+            opacity: 0;
+            transform: translate(-3000px, 0px);
+        }
+        #progresstext {
+            font-size: 25px;
+            font-weight: bold;
+            position: absolute;
+            text-align: center;
+            width: 100%;
+            z-index: 9999;
+        }
+        /* From http://codepen.io/Tallyb/pen/adpObe */
+        .vertical-divider {
+            border-top-width: 0;
+            border-right-width: 1px;
+            border-right-style: solid;
+            height: 100%;
+        }
+        #help {
+            font-size: 25px;
+            font-weight: bold;
+        }
+        #legendnormal {
+            border: 2px;
+        }
+        #legendgreen {
+            background-color: #4caf50;
+            border: solid 2px black;
+        }
+        #legendred {
+            background-color: #f44336;
+            border: solid 2px black;
+        }
+        .reviewButtons {
+            border-left: solid 1px grey;
+        }
+        .reviewContent {
+            margin-right: 5px;
+        }
+        .appname {
+            font-style: italic;
+            font-size: 24px;
+        }
+        .reviewtitle {
+            font-weight: bold;
+            font-size: 25px;
+        }
+
+    </style>
 </head>
     <body ng-app="YourApp">
-
     <div ng-controller="YourController">
-        {{time}}
+        <div md-whiteframe="12">
+            <div id="progresstext">
+                Noch {{phrases.length - currentIndex}} Phrasen!
+            </div>
+            <md-progress-linear id="progress" md-mode="determinate" ng-value="100 * (currentIndex / phrases.length)"></md-progress-linear>
+            <md-progress-linear id="progress" md-mode="determinate" ng-value="100 * (currentIndex / phrases.length)"></md-progress-linear>
+            <md-progress-linear id="progress" md-mode="determinate" ng-value="100 * (currentIndex / phrases.length)"></md-progress-linear>
+            <md-progress-linear id="progress" md-mode="determinate" ng-value="100 * (currentIndex / phrases.length)"></md-progress-linear>
+            <md-progress-linear id="progress" md-mode="determinate" ng-value="100 * (currentIndex / phrases.length)"></md-progress-linear>
+            <md-progress-linear id="progress" md-mode="determinate" ng-value="100 * (currentIndex / phrases.length)"></md-progress-linear>
+        </div>
+        <div layout-padding>
+        <md-card layout-padding id="help" layout="row" layout-align="space-between">
+            <div>
+            Sind diese Rezensionen korrekt annotiert?<br>
+            Zum korrigieren einfach klicken oder touchen!
+            </div>
+            <div>
+                <span id="legendnormal">Normal: </span> Nicht von Bedeutung<br>
+                <span id="legendgreen">Gr&uuml;n:</span> Positive Bewertung<br>
+                <span id="legendred">Rot:</span> Negative Bewertung
+            </div>
+        </md-card>
+        </div>
+        <div id="reviewContainer" layout-padding>
+            <md-card class="review" ng-repeat="i in indexArray" layout-padding md-whiteframe="24"> 
+                <div layout="row" flex >
+                    <div layout="column" class="reviewContent" flex="auto">
+                        <div layout="rows" layout-align="space-between">
+                            <div>
+                                <div class="appname">
+                                    {{phrases[i].appname}}
+                                </div>
+                                <div class="reviewtitle">
+                                    {{phrases[i].reviewtitle}}
+                                </div>
+                            </div>
+                            <div>
+                                <div>
+                                    {{phrases[i].appstore}}, {{phrases[i].ratingString}}
+                                </div>
+                                <div>
+                                    von {{phrases[i].reviewusername}}
+                                </div>
+                            </div>                    
+                        </div>
+                        <md-divider ></md-divider>
+                        <div class="reviewPhrase">
+                            <span ng-right-click="rightClickedWord(i,$index)" ng-class="{positiveWord: word.annotation == 1, negativeWord: word.annotation == -1}" ng-click="clickedWord(i,$index)" ng-repeat="word in phrases[i].reviewphrase">
+                                {{word.text}}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="reviewButtons" flex="12" layout="column" layout-align="center center">
+                        <md-button ng-click="report(i)" class="md-raised md-warn">Melden</md-button>
+                        <md-button ng-click="remove(i, $index)" class="md-raised md-primary">Verwerfen</md-button>
+                    </div>
+                </div>
+            </md-card>
+
+            <md-button ng-click="nextEntries()" class="md-raised md-primary">Sichern & Weiter</md-button>
+        </div>
     </div>
 
     <script src="bower_components/angular/angular.js"></script>
@@ -18,12 +180,6 @@
         // You can also require other files to run in this process
         require('./renderer.js')
 
-        // Include app dependency on ngMaterial
-
-        angular.module( 'YourApp', [ 'ngMaterial' ] )
-            .controller("YourController", function($scope){
-                $scope.time = new Date();
-            } );
 
     </script>
 
