@@ -11,9 +11,7 @@ angular.module('YourApp', ['ngMaterial'])
     .controller("YourController", function ($scope, $interval, $timeout, $mdToast) {
     	//fs.writeFile("reviewed2.json", "");//cause of tests
 
-            $timeout(function () {
-                checkIt($scope.phrases);
-            }, 2000)
+
 
         readTextFile("reviewed2.json", function(text){
             console.log(text);
@@ -46,7 +44,6 @@ angular.module('YourApp', ['ngMaterial'])
         }
         $scope.nextEntries = function () {
             console.log("Removing old entries");
-            changes($scope.array1, $scope.phrases);
             for(var i = 0;i<$scope.entriesPerPage;i++) {
                                 //fs.appendFile("reviewed2.json", safeIt($scope.phrases,$scope.currentIndex), function () {
                                 fs.writeFile("reviewed2.json", JSON.stringify($scope.array1), function () {
@@ -57,6 +54,7 @@ angular.module('YourApp', ['ngMaterial'])
                         }
             $scope.indexArray = [];
             $timeout(function () {
+                //checkIt($scope.phrases,$scope.array1);
                 console.log("Loading next entries");
                 $scope.currentIndex += $scope.entriesPerPage;
                 $scope.entriesPerPage=howMany($scope.currentIndex,$scope.phrases,$scope.entriesPerPage);
@@ -93,7 +91,11 @@ angular.module('YourApp', ['ngMaterial'])
         }*/
         loadData("annotation_data/GPS_all_corpusalexPattern.csv", function (data) {
             $scope.phrases = data;
-            getReviews($scope.phrases);
+            getReviews($scope.phrases, $scope.array1);
+            //$timeout(function () {
+            //    console.log($scope.phrases = checkIt($scope.phrases,$scope.array1));
+            //
+            //}, 200)
             //generateAnnotations($scope.phrases, $scope.indexArray);
         });
 
@@ -141,23 +143,43 @@ function isEmpty(obj) {
     return true;
 }
 
-function checkIt(phrases){
-    console.log(phrases[1].reviewphrase[1].$$hashKey);
-    var array1=["we","2","3"];
-    var array2=["we","2"];
 
-    array1.filter(function(n) {
-        console.log(array2.indexOf(n) != -1);
-    });
-
-
-    //for (var b = 0; b <= phrases[phrases.length - 1].id; b++) {
-    //    for (var i = 0; i < phrases.reviewphrase.length; i++) {
-    //        array1.filter(function(n) {
-    //            return array2.indexOf(n) != -1;
+//not working yet
+function checkIt(phrases, array1){
+    //for(var j = 0;j<array1.length;j++) {
+    //    for (var i = 0; i < phrases.length; i++) {
+    //        var data = $.grep(phrases.reviewphrase[i], function (element, index) {
+    //            return element.$$hashKey == array1[j];
     //        });
+    //        console.log(data)
     //    }
     //}
+    //console.log("In");
+    var c=0;
+    while(c<array1.length){
+        //console.log("Lel... "+array1.length);
+        for (var b = 0; b < phrases.length; b++) {
+            //console.log("Not? "+phrases.length);
+            for (var i = 0; i < phrases[b].reviewphrase.length-1; i++) {
+                if(c>=array1.length)break;
+                if(phrases[b].reviewphrase[i].hashKey == array1[c].hashKey){
+                    console.log("CHANGED *-* " + array1[c].annotation);
+                    phrases[b].reviewphrase[i].annotation = array1[c].annotation;
+                    c++;
+                    break;
+                }else continue;
+            }
+        }
+    }
+    console.log(phrases);
+    return phrases;
+}
+
+function getIt(i,j){
+    var data = $.grep(phrases.reviewphrase[i], function (element, index) {
+        return element.$$hashKey == array1[j];
+    });
+    return data[0];
 }
 
 function justIf(array1, value1){
@@ -265,13 +287,29 @@ function howMany(current,phrases,entriesPerPage){
     return entriesPerPage;
 }
 
-function getReviews(phrases) {
+function partOf(one,two){
+    //console.log(one,two);
+    var returnedData = $.grep(two, function(element, index){
+        return element.hashkey == one;
+    });
+    if(isEmpty(returnedData)){
+        return {}
+    }else{
+    //console.log(returnedData[0].text+ returnedData[0].hashkey+ returnedData[0].annotation + " length: "+returnedData.length);
+    return returnedData;
+    }
+}
+
+function getReviews(phrases,array1) {
     phrase = [];
     //var text = [];
     //var annotation = [];
     //var count = new Object();
     //endsolu = [];
     var a = 0;
+    var d = 0;
+    var x = 0;
+    var newWord;
     csv.fromPath("annotation_data/GPS_all_corpus_review_rating.csv", {
             headers: true,
             delimiter: "%"
@@ -280,21 +318,34 @@ function getReviews(phrases) {
             phrase.push(gay);
         })
         .on("end", function () {
+            d = 0;
             console.log("donegay");
             //console.log(phrase[1].reviewparts);
             for (var b = 0; b <= phrase[phrase.length - 1].id; b++) {
+                //console.log(b);
                 for (var i = 0; i < phrase.length; i++) {
                     if (phrase[i].id == b) {
                         //console.log("Jeay");
                         //text.push(phrase[i].reviewparts);
                         //annotation.push(phrase[i].reviewrating);
-                        var newWord = {
-                            "text": phrase[i].reviewparts,
-                            "annotation": phrase[i].reviewrating
-                        };
+                        if(partOf("object:"+d,array1).length==1){
+                            //console.log("whattheheck"+partOf("object:"+d,array1)[0].annotation);
+                            newWord = {
+                                "text": phrase[i].reviewparts,
+                                "annotation": partOf("object:"+d,array1)[0].annotation,
+                                "hashkey": "object:" + d
+                            };
+                        }else {
+                            newWord = {
+                                "text": phrase[i].reviewparts,
+                                "annotation": phrase[i].reviewrating,
+                                "hashkey": "object:" + d
+                            };
+                        }
                         phrases[b].reviewphrase[a] = newWord;
                         //console.log(phrases[b].reviewphrase[a]);
                         a++;
+                        d++;
                        // endsolu[b].text[i] = (phrase[i].reviewparts);
                         //endsolu[b].annotation[i] = (phrase[i].reviewrating);
 
@@ -312,6 +363,7 @@ function getReviews(phrases) {
 
                 //console.log(phrases[b])
             }
+            console.log(d);
         });
 }
 
