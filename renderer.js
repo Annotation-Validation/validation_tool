@@ -4,10 +4,23 @@
 
 var fs = require("fs");
 var csv = require("fast-csv");
+var $ = require("jquery");
 // Include app dependency on ngMaterial
 
 angular.module('YourApp', ['ngMaterial'])
     .controller("YourController", function ($scope, $interval, $timeout, $mdToast) {
+    	//fs.writeFile("reviewed2.json", "");//cause of tests
+
+            $timeout(function () {
+                checkIt($scope.phrases);
+            }, 2000)
+
+        readTextFile("reviewed2.json", function(text){
+            console.log(text);
+             $scope.array1 = JSON.parse(text);
+        });
+
+        //$scope.array1 = [{"text":"Changes","annotation":"0","$$hashKey":"object:Boss"}];
         $scope.currentIndex = 0;
         $scope.entriesPerPage = 3;
         $scope.indexArray = getIndexArray($scope.currentIndex, $scope.entriesPerPage);
@@ -19,6 +32,13 @@ angular.module('YourApp', ['ngMaterial'])
             } else {
                 $scope.phrases[phraseIndex].reviewphrase[wordIndex].annotation++;
             }
+
+                $scope.array1 = justIf($scope.array1,$scope.phrases[phraseIndex].reviewphrase[wordIndex]);
+               // $scope.array1=$scope.phrases[phraseIndex].reviewphrase[wordIndex];
+            //$scope.array1.push($scope.phrases[phraseIndex].reviewphrase[wordIndex]);
+            //justIf($scope.array1,$scope.phrases[phraseIndex].reviewphrase[wordIndex]);
+                console.log($scope.array1);
+                //console.log($scope.array1[0].$$hashKey);
         }
         $scope.rightClickedWord = function (phraseIndex, wordIndex) {
             console.log("RightClicked on", $scope.phrases[phraseIndex], "with word", $scope.phrases[phraseIndex].reviewphrase[wordIndex]);
@@ -26,6 +46,15 @@ angular.module('YourApp', ['ngMaterial'])
         }
         $scope.nextEntries = function () {
             console.log("Removing old entries");
+            changes($scope.array1, $scope.phrases);
+            for(var i = 0;i<$scope.entriesPerPage;i++) {
+                                //fs.appendFile("reviewed2.json", safeIt($scope.phrases,$scope.currentIndex), function () {
+                                fs.writeFile("reviewed2.json", JSON.stringify($scope.array1), function () {
+                                console.log("Successfully saved data to disk: "+$scope.currentIndex);
+                            });
+                            $scope.currentIndex++;
+
+                        }
             $scope.indexArray = [];
             $timeout(function () {
                 console.log("Loading next entries");
@@ -38,9 +67,9 @@ angular.module('YourApp', ['ngMaterial'])
             }, 255)
 
             //fs.writeFile("GPS_all_corpus_review_rating.csv"), angular.to
-            fs.writeFile("reviewed2.json", angular.toJson($scope.phrases), function () {
-                console.log("Successfully saved data to disk");
-            })
+//            fs.writeFile("reviewed2.json", angular.toJson($scope.phrases), function () {
+//                console.log("Successfully saved data to disk");
+//            })
         }
         $scope.report = function () {
             $mdToast.show(
@@ -85,6 +114,86 @@ angular.module('YourApp', ['ngMaterial'])
         };
     });
 ;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+function isEmpty(obj) {
+
+    // null and undefined are "empty"
+    if (obj == null) return true;
+
+    // Assume if it has a length property with a non-zero value
+    // that that property is correct.
+    if (obj.length > 0)    return false;
+    if (obj.length === 0)  return true;
+
+    // If it isn't an object at this point
+    // it is empty, but it can't be anything *but* empty
+    // Is it empty?  Depends on your application.
+    if (typeof obj !== "object") return true;
+
+    // Otherwise, does it have any properties of its own?
+    // Note that this doesn't handle
+    // toString and valueOf enumeration bugs in IE < 9
+    for (var key in obj) {
+        if (hasOwnProperty.call(obj, key)) return false;
+    }
+
+    return true;
+}
+
+function checkIt(phrases){
+    console.log(phrases[1].reviewphrase[1].$$hashKey);
+    var array1=["we","2","3"];
+    var array2=["we","2"];
+
+    array1.filter(function(n) {
+        console.log(array2.indexOf(n) != -1);
+    });
+
+
+    //for (var b = 0; b <= phrases[phrases.length - 1].id; b++) {
+    //    for (var i = 0; i < phrases.reviewphrase.length; i++) {
+    //        array1.filter(function(n) {
+    //            return array2.indexOf(n) != -1;
+    //        });
+    //    }
+    //}
+}
+
+function justIf(array1, value1){
+    //array1.push("Pimmel");
+    //console.log(array1);
+    //console.log(value1.$$hashKey);
+    //console.log(array1[0].$$hashKey);
+    if(isEmpty(array1)){
+        console.log("It's empty");
+        return array1[0]=(value1);
+    }
+    //console.log("immerhin"+Object.keys(array1).length+""+array1.length);
+    for(var i = 0; i<array1.length;i++) {
+        //console.log("drin!"+i);
+        if(value1.$$hashKey == array1[i].$$hashKey){
+            array1[i] = value1;
+            //console.log("existiert bereits");
+            return array1;
+        } else continue;
+    }
+    //console.log("something");
+    array1.push(value1);
+    return array1;
+}
+
+function readTextFile(file, callback) { //http://stackoverflow.com/questions/19706046/how-to-read-an-external-local-json-file-in-javascript
+    var rawFile = new XMLHttpRequest();
+    rawFile.overrideMimeType("application/json");
+    rawFile.open("GET", file, true);
+    rawFile.onreadystatechange = function() {
+        if (rawFile.readyState === 4 && rawFile.status == "200") {
+            callback(rawFile.responseText);
+        }
+    }
+    rawFile.send(null);
+}
 
 function loadData(pathToFile, callback) {
     console.log("Loading CSV from", pathToFile);
@@ -116,6 +225,25 @@ function loadData(pathToFile, callback) {
             console.log("done");
             callback(csvData);
         });
+}
+
+function safeIt(phrases,indexnum){
+    var JSONshit = JSON.stringify(phrases[indexnum].reviewphrase);
+    console.log("JSONshit: "+JSONshit);
+    return JSONshit;
+}
+
+function changes(array1, phrases){
+    console.log(array1);
+  var hash = $.grep(phrases[1].reviewphrase, function(b){
+        return b.$$hashKey == array1.$$hashKey;
+    });
+    console.log(hash);
+//for(var i = 0; i < array1.length;i++){
+//    if(){
+//
+//    }
+//}
 }
 
 function getIndexArray(start, length) {
@@ -158,7 +286,6 @@ function getReviews(phrases) {
                 for (var i = 0; i < phrase.length; i++) {
                     if (phrase[i].id == b) {
                         //console.log("Jeay");
-                        a++;
                         //text.push(phrase[i].reviewparts);
                         //annotation.push(phrase[i].reviewrating);
                         var newWord = {
@@ -166,6 +293,8 @@ function getReviews(phrases) {
                             "annotation": phrase[i].reviewrating
                         };
                         phrases[b].reviewphrase[a] = newWord;
+                        //console.log(phrases[b].reviewphrase[a]);
+                        a++;
                        // endsolu[b].text[i] = (phrase[i].reviewparts);
                         //endsolu[b].annotation[i] = (phrase[i].reviewrating);
 
