@@ -143,53 +143,14 @@ function isEmpty(obj) {
     return true;
 }
 
-
-//not working yet
-function checkIt(phrases, array1){
-    //for(var j = 0;j<array1.length;j++) {
-    //    for (var i = 0; i < phrases.length; i++) {
-    //        var data = $.grep(phrases.reviewphrase[i], function (element, index) {
-    //            return element.$$hashKey == array1[j];
-    //        });
-    //        console.log(data)
-    //    }
-    //}
-    //console.log("In");
-    var c=0;
-    while(c<array1.length){
-        //console.log("Lel... "+array1.length);
-        for (var b = 0; b < phrases.length; b++) {
-            //console.log("Not? "+phrases.length);
-            for (var i = 0; i < phrases[b].reviewphrase.length-1; i++) {
-                if(c>=array1.length)break;
-                if(phrases[b].reviewphrase[i].hashKey == array1[c].hashKey){
-                    console.log("CHANGED *-* " + array1[c].annotation);
-                    phrases[b].reviewphrase[i].annotation = array1[c].annotation;
-                    c++;
-                    break;
-                }else continue;
-            }
-        }
-    }
-    console.log(phrases);
-    return phrases;
-}
-
-function getIt(i,j){
-    var data = $.grep(phrases.reviewphrase[i], function (element, index) {
-        return element.$$hashKey == array1[j];
-    });
-    return data[0];
-}
-
 function justIf(array1, value1){
-    //array1.push("Pimmel");
     //console.log(array1);
     //console.log(value1.$$hashKey);
     //console.log(array1[0].$$hashKey);
     if(isEmpty(array1)){
         console.log("It's empty");
-        return array1[0]=(value1);
+        array1.push(value1);
+        return array1;
     }
     //console.log("immerhin"+Object.keys(array1).length+""+array1.length);
     for(var i = 0; i<array1.length;i++) {
@@ -249,24 +210,6 @@ function loadData(pathToFile, callback) {
         });
 }
 
-function safeIt(phrases,indexnum){
-    var JSONshit = JSON.stringify(phrases[indexnum].reviewphrase);
-    console.log("JSONshit: "+JSONshit);
-    return JSONshit;
-}
-
-function changes(array1, phrases){
-    console.log(array1);
-  var hash = $.grep(phrases[1].reviewphrase, function(b){
-        return b.$$hashKey == array1.$$hashKey;
-    });
-    console.log(hash);
-//for(var i = 0; i < array1.length;i++){
-//    if(){
-//
-//    }
-//}
-}
 
 function getIndexArray(start, length) {
     var indexes = [];
