@@ -9,10 +9,6 @@ var $ = require("jquery");
 
 angular.module('YourApp', ['ngMaterial'])
     .controller("YourController", function ($scope, $interval, $timeout, $mdToast) {
-    	//fs.writeFile("reviewed2.json", "");//cause of tests
-
-
-
         readTextFile("reviewed2.json", function(text){
             console.log(text);
              $scope.array1 = JSON.parse(text);
@@ -167,6 +163,17 @@ function justIf(array1, value1){
 }
 
 function readTextFile(file, callback) { //http://stackoverflow.com/questions/19706046/how-to-read-an-external-local-json-file-in-javascript
+
+    fs.open(file,'r',function(err, fd){
+        if (err) {
+            fs.writeFile(file, '[]', function(err) {
+                if(err) {
+                    console.log(err);
+                }
+                console.log("The file was saved!"); //Funktioniert scheiße ...
+            });
+        } else {
+            console.log("The file exists!");
     var rawFile = new XMLHttpRequest();
     rawFile.overrideMimeType("application/json");
     rawFile.open("GET", file, true);
@@ -176,6 +183,8 @@ function readTextFile(file, callback) { //http://stackoverflow.com/questions/197
         }
     }
     rawFile.send(null);
+        }
+    });
 }
 
 function loadData(pathToFile, callback) {
