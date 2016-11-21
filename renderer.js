@@ -82,7 +82,7 @@ angular.module('YourApp', ['ngMaterial'])
             $scope.invalid_entries.pushIfNotExist(phraseIndex, function(e) { 
                 return e == phraseIndex 
             })
-            
+            $scope.invalid_entries.sort(function(a, b){return a-b});
             $scope.indexArray = getIndexArray($scope.currentIndex, $scope.entriesPerPage, $scope.invalid_entries);
             console.log($scope.indexArray)
         }
