@@ -15,9 +15,10 @@ angular.module('YourApp', ['ngMaterial'])
         });
 
         //$scope.array1 = [{"text":"Changes","annotation":"0","$$hashKey":"object:Boss"}];
+        $scope.invalid_entries = [];
         $scope.currentIndex = 0;
         $scope.entriesPerPage = 3;
-        $scope.indexArray = getIndexArray($scope.currentIndex, $scope.entriesPerPage);
+        $scope.indexArray = getIndexArray($scope.currentIndex, $scope.entriesPerPage, $scope.invalid_entries);
         $scope.clickedWord = function (phraseIndex, wordIndex) {
             console.log("Clicked on", $scope.phrases[phraseIndex], "with word", $scope.phrases[phraseIndex].reviewphrase[wordIndex]);
             var currAnnotation = $scope.phrases[phraseIndex].reviewphrase[wordIndex].annotation;
@@ -54,7 +55,7 @@ angular.module('YourApp', ['ngMaterial'])
                 console.log("Loading next entries");
                 $scope.currentIndex += $scope.entriesPerPage;
                 $scope.entriesPerPage=howMany($scope.currentIndex,$scope.phrases,$scope.entriesPerPage);
-                $scope.indexArray = getIndexArray($scope.currentIndex, $scope.entriesPerPage);
+                $scope.indexArray = getIndexArray($scope.currentIndex, $scope.entriesPerPage, $scope.invalid_entries);
                 //generateAnnotations($scope.phrases, $scope.indexArray);
 
 
@@ -77,10 +78,13 @@ angular.module('YourApp', ['ngMaterial'])
         }
         $scope.remove = function (phraseIndex, index) {
             console.log("Removing review");
-            $scope.phrases.slice(phraseIndex, 1);
-            $scope.indexArray.slice(index, 0);
-            $scope.indexArray = getIndexArray($scope.currentIndex, $scope.entriesPerPage);
 
+            $scope.invalid_entries.pushIfNotExist(phraseIndex, function(e) { 
+                return e == phraseIndex 
+            })
+            
+            $scope.indexArray = getIndexArray($scope.currentIndex, $scope.entriesPerPage, $scope.invalid_entries);
+            console.log($scope.indexArray)
         }
         /*$scope.resetIndex = function () {
             $scope.currentIndex = 0;
@@ -220,10 +224,30 @@ function loadData(pathToFile, callback) {
 }
 
 
-function getIndexArray(start, length) {
+function getIndexArray(start, length, invalid_indices) {
     var indexes = [];
-    for (var i = start; i < start + length; i++) {
+    var previous_invalid = 0;
+    if (invalid_indices === undefined){
+        invalid_indices = [];
+    }
+    for (var index of invalid_indices){
+        console.log("a new invalid index", index)
+        if (index <= start){
+            console.log("index is smaller than the start, adding to the previous invalid")
+            previous_invalid++;
+        }
+    }
+    console.log("previous invalid: ", previous_invalid)
+    new_invalid = 0
+    for (var i = start + previous_invalid; i < start + length + previous_invalid + new_invalid; i++) {
+        for(var index of invalid_indices){
+            if (index == i){
+                new_invalid++;
+                i++;
+            }
+        }
         indexes.push(i);
+
     }
     return indexes;
 }
@@ -353,3 +377,22 @@ function probability(n) {
 Array.prototype.randomElement = function () {
     return this[Math.floor(Math.random() * this.length)]
 }
+
+
+//src http://stackoverflow.com/questions/1988349/array-push-if-does-not-exist
+// check if an element exists in array using a comparer function
+// comparer : function(currentElement)
+Array.prototype.inArray = function(comparer) { 
+    for(var i=0; i < this.length; i++) { 
+        if(comparer(this[i])) return true; 
+    }
+    return false; 
+}; 
+
+// adds an element to the array if it does not already exist using a comparer 
+// function
+Array.prototype.pushIfNotExist = function(element, comparer) { 
+    if (!this.inArray(comparer)) {
+        this.push(element);
+    }
+}; 
